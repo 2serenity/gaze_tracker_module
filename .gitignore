@@ -1,0 +1,23 @@
+# Кэш Python (не нужен в репозитории)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Папка model удалена — не коммитить, если появится снова
+model/
+
+# Виртуальное окружение
+venv/
+.venv/
+env/
+
+# Локальная калибровка (не в репозиторий)
+saved_models/*.pkl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
