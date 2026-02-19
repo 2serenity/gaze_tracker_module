@@ -1,5 +1,5 @@
 """
-Визуализация направления взгляда. Без внешних библиотек трекинга: MediaPipe + свой калибратор (Ridge).
+Визуализация направления взгляда. MediaPipe + калибратор (Ridge).
 Камера и обработка в отдельных потоках.
 """
 
@@ -11,7 +11,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 try:
@@ -21,8 +21,8 @@ except ImportError:
     print("Требуется Python с модулем tkinter.")
     sys.exit(1)
 
-from core.extractor import GazeExtractor
-from core.calibrator import GazeCalibrator
+from extractor import GazeExtractor
+from calibrator import GazeCalibrator
 
 # Точки калибровки [0, 1]
 CALIBRATION_MAP = np.column_stack([
@@ -98,7 +98,7 @@ class GazeVisualizationApp:
     def _init_core(self):
         self.extractor = GazeExtractor()
         self.calibrator = GazeCalibrator()
-        default_calib = ROOT / "saved_models" / "calib.pkl"
+        default_calib = ROOT / "calib.pkl"
         if default_calib.exists():
             self.calib_path_var.set(str(default_calib))
             self._load_calib()
@@ -118,7 +118,7 @@ class GazeVisualizationApp:
         if self.calibrator is None or not self.calibrator.fitted:
             messagebox.showwarning("Внимание", "Нет обученной калибровки (сначала откалибруйте).")
             return
-        path = self.calib_path_var.get().strip() or str(ROOT / "saved_models" / "calib.pkl")
+        path = self.calib_path_var.get().strip() or str(ROOT / "calib.pkl")
         try:
             self.calibrator.save(path)
             self.status_var.set(f"Калибровка сохранена: {path}")
