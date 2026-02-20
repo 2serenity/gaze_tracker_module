@@ -69,6 +69,7 @@ class GazeVisualizationApp:
         ttk.Spinbox(top, from_=0, to=4, width=3, textvariable=self.camera_idx_var).pack(side=tk.LEFT, padx=2)
         self.btn_start = ttk.Button(top, text="Старт", command=self._toggle_stream)
         self.btn_start.pack(side=tk.LEFT, padx=8)
+        ttk.Button(top, text="Тесты", command=self._run_tests).pack(side=tk.LEFT, padx=4)
         ttk.Button(top, text="Выход", command=self._quit).pack(side=tk.LEFT)
 
         main = ttk.Frame(self.root, padding=8)
@@ -86,6 +87,45 @@ class GazeVisualizationApp:
         self.screen_canvas.pack(fill=tk.BOTH, expand=True)
         self.status_var = tk.StringVar(value="Нажмите «Старт». В начале — калибровка по точкам.")
         ttk.Label(main, textvariable=self.status_var).pack(side=tk.BOTTOM, pady=4)
+
+    def _run_tests(self):
+        """Запуск модульных тестов и вывод результатов в отдельном окне."""
+        import unittest
+        from io import StringIO
+
+        tests_dir = ROOT / "tests"
+        if not tests_dir.is_dir():
+            messagebox.showinfo("Тесты", "Папка tests не найдена.")
+            return
+        loader = unittest.TestLoader()
+        suite = loader.discover(str(tests_dir), pattern="test_*.py")
+        stream = StringIO()
+        runner = unittest.TextTestRunner(stream=stream, verbosity=2)
+        result = runner.run(suite)
+        output = stream.getvalue()
+
+        win = tk.Toplevel(self.root)
+        win.title("Результаты тестов")
+        win.geometry("600x400")
+        win.minsize(400, 300)
+        ttk.Label(win, text="Модульные тесты", font=("", 12, "bold")).pack(pady=4)
+        frame = ttk.Frame(win, padding=4)
+        frame.pack(fill=tk.BOTH, expand=True)
+        text = tk.Text(frame, wrap=tk.WORD, font=("Consolas", 10))
+        scroll = ttk.Scrollbar(frame, command=text.yview)
+        text.configure(yscrollcommand=scroll.set)
+        text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        text.insert(tk.END, output)
+        text.config(state=tk.DISABLED)
+        run = result.testsRun
+        fails = len(result.failures) + len(result.errors)
+        if fails == 0:
+            status = f"OK — пройдено {run} тестов."
+        else:
+            status = f"Ошибки: {fails} из {run} тестов."
+        ttk.Label(win, text=status).pack(pady=4)
+        ttk.Button(win, text="Закрыть", command=win.destroy).pack(pady=4)
 
     def _browse_calib(self):
         path = filedialog.askopenfilename(
